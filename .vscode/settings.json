@@ -1,0 +1,19 @@
+{
+  "workbench.colorTheme": "One Dark Pro",
+  "workbench.colorCustomizations": {
+    // 창의 전체적인 테두리와 활동 바를 붉은 톤으로 강조
+    "activityBar.background": "#3d0a0a",
+    "activityBar.foreground": "#f87171",
+    "titleBar.activeBackground": "#450a0a",
+    "titleBar.activeForeground": "#ffffff",
+    "statusBar.background": "#450a0a",
+    "statusBar.foreground": "#ffffff",
+    // 에디터 배경에 아주 미세한 붉은 기를 추가하여 시각적 분리
+    "editor.background": "#1e1a1a"
+  },
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "bmewburn.vscode-intelephense-client",
+  "files.associations": { "*.blade.php": "blade" },
+  "window.title": "🔴 ADMIN | ${activeEditorShort}${dirty}",
+  "window.customTitleBarVisibility": "window"
+}
