@@ -1,0 +1,6 @@
+# .dockerignore
+/vendor/
+node_modules/
+
+# 라라벨 캐시 파일이 복사되는 것을 방지
+/bootstrap/cache/*.php
