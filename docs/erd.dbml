@@ -1,0 +1,81 @@
+// 1. 아티스트 정보
+Table artists {
+  id integer [primary key, increment]
+  name varchar [unique, note: '아티스트명 (aespa, NCT 127 등)']
+  group_name varchar [note: '유닛,  그룹명']
+  official_channels json [note: '플랫폼별 공식 채널 ID 정보']
+  created_at timestamp
+  updated_at timestamp
+}
+
+// 2. YouTube 수집 데이터 (Airflow Pipeline A)
+Table sns_youtube_stats {
+  id integer [primary key, increment]
+  artist_id integer [ref: > artists.id]
+  video_id varchar
+  video_title varchar
+  view_count bigint
+  like_count bigint
+  comment_count bigint
+  top_comments longtext [note: 'AI 분석용 주요 댓글 뭉치']
+  collected_at timestamp [note: '수집 시점']
+  
+  indexes {
+    (artist_id, collected_at) [name: 'idx_yt_artist_date']
+  }
+}
+
+// 3. X(Twitter) 수집 데이터 (Airflow Pipeline B)
+Table sns_x_trends {
+  id integer [primary key, increment]
+  artist_id integer [ref: > artists.id]
+  hashtag varchar
+  tweet_count integer
+  sample_tweets longtext [note: 'AI 분석용 샘플 텍스트']
+  collected_at timestamp
+  
+  indexes {
+    (artist_id, collected_at) [name: 'idx_x_artist_date']
+  }
+}
+
+// 4. 커뮤니티 데이터 (Airflow Pipeline C)
+Table sns_community_posts {
+  id integer [primary key, increment]
+  artist_id integer [ref: > artists.id]
+  platform varchar [note: 'theqoo, dcinside, instiz 등']
+  post_title varchar
+  post_content longtext
+  view_count integer
+  post_created_at timestamp
+  collected_at timestamp
+
+  indexes {
+    (artist_id, platform) [name: 'idx_comm_artist_platform']
+  }
+}
+
+// 5. AI 인사이트 결과 (AI Backend 가공)
+Table ai_analysis_results {
+  id integer [primary key, increment]
+  artist_id integer [ref: > artists.id]
+  source_platform varchar [note: 'youtube, x, community 등']
+  analysis_type varchar [note: 'summary, sentiment, trend']
+  result_text longtext [note: 'Gemini AI 분석 결과']
+  meta_data json [note: '긍정/부정 점수 등 수치화 데이터']
+  created_at timestamp
+}
+
+// 6. 시스템 성능 모니터링 (Discord 알림 트래킹용)
+Table system_performance_logs {
+  id integer [primary key, increment]
+  service_name varchar [note: 'ai-backend, data-pipeline']
+  task_name varchar [note: 'endpoint 주소, DAG 이름 등']
+  duration float [note: '소요 시간 (초)']
+  alert_status boolean [note: 'Discord 알림 발송 여부']
+  created_at timestamp
+  
+  indexes {
+    duration [name: 'idx_perf_duration']
+  }
+}
