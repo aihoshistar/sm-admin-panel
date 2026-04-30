@@ -1,59 +1,96 @@
-> "본 프로젝트의 상세한 데이터 수집 전략 및 테이블 설계 근거는 [DATA-STRATEGY.md](https://github.com/aihoshistar/sm-ai-backend/blob/main/docs/DATA-STRATEGY.md) 에서 확인하실 수 있습니다."
+# SM Admin Panel
 
-# SM Artist Global Monitoring & AI Insight Service
+PHP (Laravel) 기반 관리자 대시보드. SNS 데이터 시각화 및 AI 분석 결과 조회.
 
- - SM 엔터테인먼트 아티스트의 글로벌 팬덤 데이터를 수집하고, Gemini AI를 통해 인사이트를 도출하는 백엔드 시스템
- - 각. 서버는 최소한의 비용만 지출될 수 있도록 고려하여 설계함
+## Tech Stack
 
-## 1. 전체 시스템 구조
- - Data Layer (Oracle Cloud): Airflow를 통한 데이터 수집 자동화 및 PostgreSQL 적재.
- - Service Layer (Docker/Python): FastAPI 기반의 비즈니스 로직 처리 및 Gemini AI 연동.
- - Monitoring Layer (PHP Hosting): Laravel 기반의 수집 현황 및 AI 분석 결과 대시보드.
- - Ops Layer: Discord Webhook을 통한 실시간 장애 및 성능 지연 알림.
+- Laravel 13
+- MySQL (분석 결과 조회)
+- Blade Templates
+- Chart.js (데이터 시각화)
 
-### TODO: 다이어그램 추가 예정
+## Quick Start
 
-## 2. 관련 레포지토리
+### Docker로 실행 (권장)
 
-| Repository | Description | Key Tech |
-| :--- | :--- | :--- |
-| [**sm-data-pipeline**](https://github.com/aihoshistar/sm-data-pipeline) | 아티스트/펜덤 활동 데이터 크롤링 및 워크플로우 관리 | Python, Airflow, Selenium |
-| [**sm-ai-backend**](https://github.com/aihoshistar/sm-ai-backend) | **[Main]** Core AI 로직 연동 및 API 서비스 제공 | FastAPI, Gemini API, Redis |
-| [**sm-admin-panel**](https://github.com/aihoshistar/sm-admin-panel) | 데이터 수집 현황 시각화 및 백오피스 도구 | Laravel 13, PHP 8.x |
+```bash
+# 루트 디렉토리에서
+cd sm-artist-insights
+./scripts/start.sh
+```
 
-## 3. 주요 기능과 의사결정
+대시보드: http://localhost:8080
 
-### 실시간 에러 트래킹 및 성능 모니터링
- - **Latency Check:** API 처리 시간이 **0.7s를 초과**할 경우, 로그와 함께 **Discord 채널**로 알림 전송
- - **Error Handling:** 500 에러 및 크롤러 중단 발생 시 Traceback을 포함한 알림을 전송하여 대응할 수 있도록함
+### 로컬 개발
 
-### 비용을 생각하여 하이브리드 인프라 전략
-  * **Strategy:** Oracle Cloud(무료 인스턴스)와 개인 PHP 호스팅을 조합하여 인프라 비용 0원 달성.
-  * **Portability:** 모든 환경을 **Docker 컨테이너화**하여, 추후 트래픽 및 리소스 이슈가 발생할 경우 **AWS(ECS/EKS) 또는 GCP** 등 클라우드 서비스로 마이그레이션이 가능하도록 설계.
+```bash
+# 의존성 설치
+composer install
+npm install
 
-### Gemini API 최적화와 데이터 파이프라인
+# 환경변수 설정
+cp .env.example .env
+php artisan key:generate
 
-  * **API Management:** Gemini API의 무료 쿼터 제한을 고려하여 Redis 캐싱 레이어를 도입, 동일 요청에 대한 중복 호출 방지.
-  * **Automation:** Airflow를 활용해 수집 주기 및 실패 시 Retry 전략을 자동화하여 데이터 결손 최소화.
+# 마이그레이션
+php artisan migrate
 
-## 4. 기술스택
+# 서버 실행
+php artisan serve --port=8080
+npm run dev
+```
 
-### **Backend & AI**
+## 디렉토리 구조
 
-  * Python 3.10+, FastAPI, Gemini Pro API (LLM)
-  * SQLAlchemy (ORM), PostgreSQL, Redis
+```
+sm-admin-panel/
+├── app/
+│   ├── Http/Controllers/   # 컨트롤러
+│   ├── Models/             # Eloquent 모델
+│   └── Providers/
+├── database/
+│   ├── migrations/         # DB 스키마
+│   └── seeders/            # 샘플 데이터
+├── resources/
+│   ├── views/              # Blade 템플릿
+│   ├── css/                # 스타일
+│   └── js/                 # 프론트엔드
+└── routes/
+    └── web.php             # 라우팅
+```
 
-### **Data Engineering**
+## 주요 기능
 
-  * Apache Airflow (Workflow Management)
-  * BeautifulSoup4, Selenium (Crawling)
+- **아티스트 대시보드**: SNS 통계 실시간 조회
+- **트렌드 차트**: YouTube, X, 커뮤니티 데이터 시각화
+- **AI 분석 결과**: 감성 분석 및 트렌드 예측
+- **데이터 테이블**: 크롤링 데이터 목록
 
-### **DevOps & Admin**
+## 환경변수
 
-  * Docker
-  * Laravel 13 (Admin Dashboard)
-  * Discord Webhook (Monitoring)
+```bash
+# MySQL
+DB_HOST=mysql
+DB_DATABASE=sm_artist_insights
+DB_USERNAME=root
+DB_PASSWORD=your_password
 
-## 4. 트래블슈팅
+# Laravel
+APP_NAME="SM Artist Insights"
+APP_URL=http://localhost:8080
+```
 
- * Gemini 한도..
+## 마이그레이션
+
+```bash
+# 테이블 생성
+php artisan migrate
+
+# 샘플 데이터 (선택)
+php artisan db:seed
+```
+
+## 상세 문서
+
+전체 프로젝트 구조 및 설정: [루트 README](../README.md)  
+데이터 전략: [docs/DATA-STRATEGY.md](./docs/DATA-STRATEGY.md)
